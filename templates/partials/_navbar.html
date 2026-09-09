@@ -1,0 +1,63 @@
+{% load static %}
+<nav class="bg-slate-900 border-b border-slate-800 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+        <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2 font-semibold text-emerald-400">
+            <img src="{% static 'icons/company_icon.ico' %}" alt="" class="w-7 h-7 rounded-md">
+            AL-HALAL ISLAMIC COOPERATIVE
+        </a>
+        {% if user.is_authenticated %}
+        {% with profile=user.member_profile %}
+        <div class="flex items-center gap-4 text-sm">
+            {% if user.is_admin_tier %}
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" @click.outside="open = false"
+                            class="text-slate-300 hover:text-emerald-400 flex items-center gap-1">
+                        Admin Tools
+                        <span x-text="open ? '▲' : '▼'"></span>
+                    </button>
+                    <div x-show="open" x-cloak
+                        class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-lg shadow-lg py-1 z-50">
+                        {% if perms.ledger.can_record_manual_transaction %}
+                        <a href="{% url 'transactions:manual_entry' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Record Transaction</a>
+                        {% endif %}
+                        {% if perms.payments.change_paymentproof %}
+                        <a href="{% url 'payments:receipt_review_queue' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Review Receipts</a>
+                        {% endif %}
+                        {% if perms.loans.can_review_loans %}
+                        <a href="{% url 'loans:admin_queue' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Loan Queue</a>
+                        {% endif %}
+                        {% if perms.ledger.can_view_ledger_exports %}
+                        <a href="{% url 'ledger:export_list' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Ledger Exports</a>
+                        {% endif %}
+                        {% if perms.payments.add_reconciliationrun %}
+                        <a href="{% url 'payments:reconciliation_upload' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Reconciliation</a>
+                        {% endif %}
+                        {% if perms.core.can_view_reports %}
+                        <a href="{% url 'ledger:reports_index' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Reports</a>
+                        {% endif %}
+                        {% if perms.core.view_auditlog %}
+                        <a href="{% url 'dashboard:audit_log' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Audit Log</a>
+                        {% endif %}
+                        {% if perms.accounts.can_approve_members %}
+                        <a href="{% url 'accounts:approve_members' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Approve Members</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                {% if profile.status == 'active' %}
+                <a href="{% url 'payments:receipt_upload' %}" class="text-slate-300 hover:text-emerald-400">Upload Receipt</a>
+                <a href="{% url 'loans:my_loans' %}" class="text-slate-300 hover:text-emerald-400">My Loans</a>
+                {% else %}
+                <span class="text-slate-600 cursor-not-allowed" aria-disabled="true" title="Available after admin approval">Upload Receipt</span>
+                <span class="text-slate-600 cursor-not-allowed" aria-disabled="true" title="Available after admin approval">My Loans</span>
+                {% endif %}
+            {% endif %}
+            <span class="text-slate-500 hidden sm:inline">{{ user.get_full_name|default:user.username }}</span>
+            <a href="{% url 'accounts:logout' %}" class="text-slate-400 hover:text-rose-400">Log out</a>
+        </div>
+        {% endwith %}
+        {% else %}
+        <a href="{% url 'accounts:login' %}" class="text-slate-300 hover:text-emerald-400 text-sm">Log in</a>
+        {% endif %}
+    </div>
+</nav>

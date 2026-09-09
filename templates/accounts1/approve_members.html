@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Approve Members — AL-HALAL ISLAMIC{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-2">Pending Members</h1>
+<p class="text-sm text-slate-500 mb-6">
+    Select members to approve. Activating a member also queues creation of
+    their PayVessel reserved virtual account (runs asynchronously).
+</p>
+
+<form method="post" class="space-y-3">
+    {% csrf_token %}
+    {% for profile in pending %}
+    <label class="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-xl px-5 py-4 hover:border-emerald-700 cursor-pointer">
+        <input type="checkbox" name="profile_ids" value="{{ profile.pk }}"
+               class="w-4 h-4 accent-emerald-500">
+        <div class="flex-1">
+            <p class="font-medium">{{ profile.user.get_full_name|default:profile.user.username }}</p>
+            <p class="text-slate-500 text-xs mt-1">
+                {{ profile.user.email|default:"—" }} ·
+                {{ profile.get_id_type_display }} · joined {{ profile.joined_at|date:"d M Y" }}
+            </p>
+        </div>
+        <span class="text-xs px-2 py-1 rounded-full bg-amber-900/40 text-amber-300 border border-amber-800">
+            {{ profile.get_status_display }}
+        </span>
+    </label>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No pending members.</p>
+    {% endfor %}
+
+    {% if pending %}
+    <div class="pt-4">
+        <button type="submit"
+                class="bg-emerald-600 hover:bg-emerald-500 rounded-lg px-5 py-2 font-medium">
+            Approve Selected
+        </button>
+    </div>
+    {% endif %}
+</form>
+{% endblock %}

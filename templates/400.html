@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Bad Request — AL-HALAL ISLAMIC{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto mt-16 text-center">
+    <p class="text-5xl font-bold text-amber-400 mb-3">400</p>
+    <h1 class="text-lg font-semibold mb-2">Bad Request</h1>
+    <p class="text-sm text-slate-500 mb-6">
+        That request couldn't be understood. If you followed a link to get here, it may be broken.
+    </p>
+    <a href="{% url 'dashboard:home' %}" class="inline-block bg-emerald-600 hover:bg-emerald-500 rounded-lg px-4 py-2 text-sm font-medium">
+        Go to Dashboard
+    </a>
+</div>
+{% endblock %}

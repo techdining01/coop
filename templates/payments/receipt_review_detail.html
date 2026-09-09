@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Review Receipt — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+
+<a href="{% url 'payments:receipt_review_queue' %}" class="text-sm text-slate-500 hover:text-emerald-400">&larr; Back to queue</a>
+
+<h1 class="text-xl font-semibold mt-2 mb-1">{{ proof.member.get_full_name|default:proof.member.username }}</h1>
+<p class="text-sm text-slate-500 mb-6">
+    Claims: {{ proof.get_claimed_type_display }} · ₦{{ proof.claimed_amount|floatformat:2 }}
+    {% if proof.status == 'possible_duplicate' %}
+        <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-900 text-amber-300">Possible Duplicate — check carefully</span>
+    {% endif %}
+</p>
+
+{% if error %}
+<div class="bg-rose-900/40 border border-rose-700 rounded-lg p-3 mb-4 text-sm text-rose-300">{{ error }}</div>
+{% endif %}
+
+<div class="grid md:grid-cols-2 gap-8">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+        {% with url=proof.file.url %}
+        {% if ".pdf" in url|lower %}
+            <a href="{{ url }}" target="_blank" class="text-emerald-400 underline text-sm">Open PDF receipt</a>
+        {% else %}
+            <img src="{{ url }}" alt="Uploaded receipt" class="w-full rounded-lg">
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <div x-data="{ confirmingReject: false }">
+        <form method="post" class="space-y-4 bg-slate-900 border border-slate-800 rounded-xl p-5">
+            {% csrf_token %}
+            <p class="text-xs text-slate-500">Enter what you actually see on the receipt — not just what was claimed.</p>
+            {% for field in form %}
+            <div>
+                <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div x-show="!confirmingReject" class="flex gap-3">
+                <button type="submit" name="action" value="approve"
+                        class="flex-1 bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+                    Approve &amp; Post to Ledger
+                </button>
+                <button type="button" @click="confirmingReject = true"
+                        class="flex-1 bg-slate-800 hover:bg-rose-900 rounded-lg py-2 font-medium">
+                    Reject
+                </button>
+            </div>
+
+            <div x-show="confirmingReject" x-cloak class="space-y-3 border-t border-slate-800 pt-4">
+                <label class="block text-sm text-slate-400">Rejection reason (required)</label>
+                <textarea name="rejection_reason" rows="2" class="form-input" placeholder="e.g. amount doesn't match, image unreadable"></textarea>
+                <div class="flex gap-3">
+                    <button type="submit" name="action" value="reject"
+                            class="flex-1 bg-rose-600 hover:bg-rose-500 rounded-lg py-2 font-medium">
+                        Confirm Rejection
+                    </button>
+                    <button type="button" @click="confirmingReject = false"
+                            class="flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg py-2 font-medium">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

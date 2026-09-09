@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Record Transaction — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-1">Record a Transaction</h1>
+<p class="text-sm text-slate-500 mb-6">
+    Fallback tool — for cash handled outside the app, or when PayVessel's automatic
+    confirmation isn't available. This posts straight to the ledger as confirmed.
+</p>
+
+<div id="manual-entry-wrapper">
+    {% include "transactions/_manual_entry_result.html" %}
+</div>
+{% endblock %}

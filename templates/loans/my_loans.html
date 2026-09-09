@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}My Loans — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-xl font-semibold">My Loans</h1>
+    <a href="{% url 'loans:apply' %}" class="bg-emerald-600 hover:bg-emerald-500 rounded-lg px-4 py-2 text-sm font-medium">
+        Apply for a Loan
+    </a>
+</div>
+
+{% if guarantor_requests %}
+<div class="mb-6">
+    <h2 class="text-sm font-medium text-amber-400 mb-2">Guarantor Requests Awaiting Your Response</h2>
+    <div class="space-y-2">
+        {% for loan in guarantor_requests %}
+        <a href="{% url 'loans:guarantor_response' loan.pk %}"
+           class="block bg-amber-900/20 border border-amber-800 rounded-lg px-4 py-3 text-sm hover:border-amber-600">
+            {{ loan.member.get_full_name|default:loan.member.username }} is asking you to guarantee
+            a ₦{{ loan.principal|floatformat:2 }} loan.
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="space-y-2">
+    {% for loan in loans %}
+    <a href="{% url 'loans:loan_detail' loan.pk %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl px-5 py-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="font-medium">₦{{ loan.principal|floatformat:2 }} — {{ loan.get_financing_structure_display }}</p>
+                <p class="text-slate-500 text-xs mt-1">{{ loan.purpose }} · applied {{ loan.applied_at|date:"d M Y" }}</p>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">{{ loan.get_status_display }}</span>
+        </div>
+    </a>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No loans yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

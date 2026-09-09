@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}AL-HALAL ISLAMIC COOPERATIVE — Welcome{% endblock %}
+{% block content %}
+
+<div class="bg-slate-950 text-slate-100 min-h-screen">
+
+    <section class="relative -mx-4 -mt-6 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950">
+        <div
+            class="absolute inset-0 opacity-[0.06]"
+            style="background-image: radial-gradient(circle at 1px 1px, #10b981 1px, transparent 0); background-size: 24px 24px;"
+            aria-hidden="true"
+        ></div>
+
+        <div class="relative max-w-3xl mx-auto px-6 py-24 sm:py-32 text-center">
+            <img
+                src="{% static 'icons/company_logo.png' %}"
+                alt="AL-HALAL Islamic Cooperative logo"
+                class="mx-auto w-14 h-14  ring-2 ring-emerald-500/40 mb-6 object-cover"
+                loading="lazy"
+            >
+
+            <p class="text-emerald-400 text-xs sm:text-sm font-semibold tracking-[0.25em] uppercase mb-4">
+                Shari'ah-compliant savings &amp; loans
+            </p>
+
+            <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-slate-50 leading-tight mb-4">
+                AL-HALAL ISLAMIC<br class="hidden sm:block"> COOPERATIVE
+            </h1>
+
+            <p class="text-slate-300 text-sm sm:text-base max-w-xl mx-auto mb-1">
+                An islamic-driven cooperative society for muslims prosperity. 
+            </p>
+            <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto mb-6">
+                Join us to save, invest, and access interest-free loans.
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{% url 'accounts:login' %}"
+                class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg px-6 py-3 shadow-lg shadow-emerald-900/40 transition">
+                    Log in
+                </a>
+                <a href="{% url 'accounts:register' %}"
+                class="inline-flex items-center justify-center bg-slate-100 hover:bg-white border border-slate-200 text-slate-900 font-medium rounded-lg px-6 py-3 transition">
+                    Register
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-16 px-4">
+        <div class="max-w-4xl mx-auto grid sm:grid-cols-3 gap-4">
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-emerald-700/60 transition">
+                <svg class="w-6 h-6 text-emerald-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 17l5-5 4 4 7-7M14 9h5v5"/>
+                </svg>
+                <h3 class="font-semibold text-emerald-400 mb-1">Savings</h3>
+                <p class="text-sm text-slate-400">Track every contribution and withdrawal in one place.</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-emerald-700/60 transition">
+                <svg class="w-6 h-6 text-emerald-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <circle cx="8" cy="8" r="5"/>
+                    <circle cx="14" cy="14" r="5"/>
+                </svg>
+                <h3 class="font-semibold text-emerald-400 mb-1">Loans</h3>
+                <p class="text-sm text-slate-400">Apply for interest-free loans, reviewed by the admin team.</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-emerald-700/60 transition">
+                <svg class="w-6 h-6 text-emerald-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7 4h10a1 1 0 011 1v14a1 1 0 01-1 1H7a1 1 0 01-1-1V5a1 1 0 011-1z"/>
+                </svg>
+                <h3 class="font-semibold text-emerald-400 mb-1">Transparency</h3>
+                <p class="text-sm text-slate-400">Every transaction is recorded in an immutable ledger.</p>
+            </div>
+
+        </div>
+    </section>
+
+    {% endblock %}
+
+    {% block footer %}
+
+    <img
+        src="{% static 'icons/al-halal_footer.png' %}"
+        alt="AL-HALAL Islamic Cooperative emblem"
+        class="mx-auto mt-16 w-20 h-auto"
+        loading="lazy"
+    >
+
+    <footer class="mt-6 max-w-4xl mx-auto px-4 py-6 border-t border-slate-800 text-center text-xs text-slate-400">
+        &copy; {% now "Y" %} AL-HALAL ISLAMIC COOPERATIVE &middot; Liberty Road, Oke-Ado, Ibadan.
+    </footer>
+    {% endblock %}
+
+</div>

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Member Approvals — {{ COOPERATIVE_SHORT_NAME }}{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-6">Pending Member Approvals</h1>
+
+<div class="space-y-3">
+    {% for profile in profiles %}
+    <a href="{% url 'accounts:member_approval_detail' profile.pk %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl px-5 py-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="font-medium">{{ profile.user.get_full_name|default:profile.user.username }}</p>
+                <p class="text-slate-500 text-xs mt-1">
+                    Registered {{ profile.joined_at|date:"d M Y" }} · {{ profile.get_id_type_display }}
+                </p>
+            </div>
+            {% with latest_kyc=profile.user.kyc_verifications.first %}
+            {% if latest_kyc %}
+                <span
+                    class="text-xs px-2 py-1 rounded-full
+                    {% if latest_kyc.match_status == 'match' %}bg-emerald-900 text-emerald-300
+                    {% elif latest_kyc.match_status == 'mismatch' %}bg-rose-900 text-rose-300
+                    {% else %}bg-slate-800 text-slate-400{% endif %}"
+                >
+                    KYC: {{ latest_kyc.get_match_status_display }}
+                </span>
+            {% else %}
+                <span class="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-500">KYC: Pending</span>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </a>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No members waiting for approval.</p>
+    {% endfor %}
+</div>
+{% endblock %}

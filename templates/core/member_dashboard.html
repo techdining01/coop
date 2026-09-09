@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My Savings — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+
+<div class="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-6 mb-6">
+    <p class="text-emerald-100 text-sm">Current Savings Balance</p>
+    <p class="text-3xl font-bold mt-1">₦{{ balance|floatformat:2 }}</p>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
+    <p class="text-slate-400 text-sm mb-2">Your Savings Account</p>
+    {% if profile.payvessel_account_number %}
+        <p class="text-lg font-mono">{{ profile.payvessel_account_number }}</p>
+        <p class="text-slate-500 text-sm">{{ profile.payvessel_bank_name }}</p>
+        <p class="text-slate-600 text-xs mt-2">Transfer here anytime — it's detected and confirmed automatically.</p>
+    {% else %}
+        <p class="text-sm text-slate-500">
+            Your dedicated account number is being set up. In the meantime, you can
+            <a href="{% url 'payments:receipt_upload' %}" class="text-emerald-400 underline">upload a receipt</a> instead.
+        </p>
+    {% endif %}
+</div>
+
+{% if not has_share_capital %}
+<div class="bg-amber-900/40 border border-amber-700 rounded-xl p-4 mb-6 text-sm text-amber-200">
+    You haven't completed your Shared Capital contribution yet — this is required before you're
+    eligible to apply for any loan.
+</div>
+{% endif %}
+
+<div class="flex gap-3 mb-6">
+    <a href="{% url 'ledger:my_statement_pdf' %}"
+       class="flex-1 text-center bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-lg py-2 text-sm">
+        Download Statement (PDF)
+    </a>
+    <a href="{% url 'ledger:my_statement_csv' %}"
+       class="flex-1 text-center bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-lg py-2 text-sm">
+        Download Statement (CSV)
+    </a>
+</div>
+
+<h2 class="text-sm font-medium text-slate-400 mb-3">Recent Activity</h2>
+<div class="space-y-2">
+    {% for entry in history %}
+    <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-sm">
+        <div>
+            <p class="font-medium">{{ entry.get_entry_type_display }}</p>
+            <p class="text-slate-500 text-xs">{{ entry.created_at|date:"d M Y, H:i" }}</p>
+        </div>
+        <div class="text-right">
+            <p class="font-semibold {% if entry.signed_amount >= 0 %}text-emerald-400{% else %}text-rose-400{% endif %}">
+                {% if entry.signed_amount >= 0 %}+{% endif %}₦{{ entry.amount|floatformat:2 }}
+            </p>
+            <p class="text-slate-600 text-xs">Balance: ₦{{ entry.balance_after|floatformat:2 }}</p>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No activity yet.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

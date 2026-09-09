@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Reconciliation Result — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+
+<a href="{% url 'payments:reconciliation_upload' %}" class="text-sm text-slate-500 hover:text-emerald-400">&larr; Back to reconciliation</a>
+
+<h1 class="text-xl font-semibold mt-2 mb-1">Reconciliation Run — {{ run.created_at|date:"d M Y, H:i" }}</h1>
+<p class="text-sm text-slate-500 mb-6">
+    by {{ run.uploaded_by.get_full_name|default:run.uploaded_by.username }}
+</p>
+
+<div class="grid sm:grid-cols-3 gap-4 mb-8">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-slate-400 text-xs">Rows in File</p>
+        <p class="text-xl font-semibold mt-1">{{ run.total_rows_in_file }}</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-slate-400 text-xs">Matched</p>
+        <p class="text-xl font-semibold text-emerald-400 mt-1">{{ run.matched_count }}</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-slate-400 text-xs">Discrepancies</p>
+        <p class="text-xl font-semibold {% if run.discrepancy_count %}text-rose-400{% else %}text-emerald-400{% endif %} mt-1">
+            {{ run.discrepancy_count }}
+        </p>
+    </div>
+</div>
+
+{% if discrepancies %}
+<h2 class="text-sm font-medium text-slate-400 mb-3">Discrepancies</h2>
+<div class="space-y-2">
+    {% for d in discrepancies %}
+    <div class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-sm">
+        <div class="flex items-center justify-between">
+            <span class="font-medium">{{ d.transaction_reference|default:"(no reference)" }}</span>
+            <span
+                class="text-xs px-2 py-0.5 rounded-full
+                {% if d.kind == 'amount_mismatch' %}bg-amber-900 text-amber-300
+                {% elif d.kind == 'missing_locally' %}bg-rose-900 text-rose-300
+                {% else %}bg-slate-800 text-slate-400{% endif %}"
+            >
+                {{ d.get_kind_display }}
+            </span>
+        </div>
+        <p class="text-slate-500 text-xs mt-1">{{ d.notes }}</p>
+        {% if d.expected_amount or d.actual_amount %}
+        <p class="text-slate-400 text-xs mt-1">
+            {% if d.expected_amount %}PayVessel: ₦{{ d.expected_amount|floatformat:2 }}{% endif %}
+            {% if d.actual_amount %} · Local: ₦{{ d.actual_amount|floatformat:2 }}{% endif %}
+        </p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-emerald-400 text-sm">No discrepancies — everything matched.</p>
+{% endif %}
+{% endblock %}

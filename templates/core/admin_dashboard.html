@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — AL-HALAL ISLAMIC COOPERATIVE{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <p class="text-slate-400 text-sm">Total Members</p>
+        <p class="text-2xl font-bold mt-1">{{ total_members }}</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <p class="text-slate-400 text-sm">Total Cooperative Savings</p>
+        <p class="text-2xl font-bold text-emerald-400 mt-1">₦{{ total_savings|floatformat:2 }}</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <p class="text-slate-400 text-sm">Total Inflow (all-time)</p>
+        <p class="text-2xl font-bold text-emerald-400 mt-1">₦{{ total_inflow|floatformat:2 }}</p>
+        <p class="text-slate-600 text-xs mt-1">Deposits, share capital, repayments</p>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <p class="text-slate-400 text-sm">Total Outflow (all-time)</p>
+        <p class="text-2xl font-bold text-rose-400 mt-1">₦{{ total_outflow|floatformat:2 }}</p>
+        <p class="text-slate-600 text-xs mt-1">Loan disbursements, withdrawals</p>
+    </div>
+</div>
+
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
+    <p class="text-slate-400 text-sm mb-4">Weekly Inflow vs Outflow — last 8 weeks</p>
+    <canvas id="inflowOutflowChart" height="90"></canvas>
+</div>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_inflow|json_script:"chart-inflow" }}
+{{ chart_outflow|json_script:"chart-outflow" }}
+<script>
+    const chartLabels = JSON.parse(document.getElementById('chart-labels').textContent);
+    const chartInflow = JSON.parse(document.getElementById('chart-inflow').textContent);
+    const chartOutflow = JSON.parse(document.getElementById('chart-outflow').textContent);
+
+    new Chart(document.getElementById('inflowOutflowChart'), {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: 'Inflow',
+                    data: chartInflow,
+                    backgroundColor: '#10b981',
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Outflow',
+                    data: chartOutflow,
+                    backgroundColor: '#f43f5e',
+                    borderRadius: 4,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: '#cbd5e1' } },
+            },
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' }, beginAtZero: true },
+            },
+        },
+    });
+</script>
+
+<div class="grid sm:grid-cols-2 gap-4 mb-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between">
+        <div>
+            <p class="text-slate-400 text-sm">Record a payment</p>
+            <p class="text-xs text-slate-600 mt-1">Manual entry fallback tool</p>
+        </div>
+        <a
+            href="{% url 'transactions:manual_entry' %}"
+            class="bg-emerald-600 hover:bg-emerald-500 rounded-lg px-4 py-2 text-sm font-medium"
+        >
+            Record
+        </a>
+    </div>
+</div>
+
+<h2 class="text-sm font-medium text-slate-400 mb-3">Recent Ledger Activity</h2>
+<div class="space-y-2">
+    {% for entry in recent_entries %}
+    <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-sm">
+        <div>
+            <p class="font-medium">{{ entry.member.get_full_name|default:entry.member.username }}</p>
+            <p class="text-slate-500 text-xs">
+                {{ entry.get_entry_type_display }} · {{ entry.get_source_display }} · {{ entry.created_at|date:"d M, H:i" }}
+            </p>
+        </div>
+        <span class="font-semibold text-emerald-400">₦{{ entry.amount|floatformat:2 }}</span>
+    </div>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No ledger activity yet.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Log out — AL-HALAL ISLAMIC{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto mt-16 text-center">
+    <h1 class="text-xl font-semibold mb-2">Log out of AL-HALAL ISLAMIC?</h1>
+    <p class="text-sm text-slate-500 mb-6">You'll need to log back in to access your dashboard.</p>
+    <form method="post" class="space-y-3">
+        {% csrf_token %}
+        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 rounded-lg py-2 font-medium">
+            Confirm Logout
+        </button>
+        <a href="{% url 'dashboard:home' %}" class="block w-full bg-slate-800 hover:bg-slate-700 rounded-lg py-2 font-medium">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

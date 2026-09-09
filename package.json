@@ -1,0 +1,17 @@
+{
+  "name": "coop",
+  "version": "1.0.0",
+  "description": "Matches the locked system design end to end. Phase 1 (core ledger, auth, manual entry, PWA shell), Phase 2 (PayVessel integration + receipt upload), Phase 3 (loans, repayment schedules, profit-sharing distribution), Phase 4 (loan eligibility rules), Phase 5 (weekly ledger PDF export + PayVessel reconciliation tooling), Phase 6 (bulk reports, personal statements, audit log viewer, role-based admin permissions).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

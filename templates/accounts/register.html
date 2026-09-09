@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Register — {{ COOPERATIVE_SHORT_NAME }}{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-8">
+    <h1 class="text-xl font-semibold mb-1">Join the Cooperative</h1>
+    <p class="text-sm text-slate-500 mb-6">
+        Your BVN/NIN is stored encrypted and used only to verify your identity.
+        From Phase 2 onward, it's cross-checked against PayVessel's Verification API
+        before your membership is activated.
+    </p>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>
+            {% endif %}
+            {% if field.help_text %}
+                <p class="text-slate-500 text-xs mt-1">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+            Register
+        </button>
+    </form>
+    <p class="text-sm text-slate-500 mt-4">
+        Already a member? <a href="{% url 'accounts:login' %}" class="text-emerald-400">Log in</a>
+    </p>
+</div>
+{% endblock %}

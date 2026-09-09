@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Reconciliation — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-1">Bank/PayVessel Reconciliation</h1>
+<p class="text-sm text-slate-500 mb-6">
+    Upload a settlement/transaction CSV exported from your PayVessel merchant
+    dashboard to cross-check it against what was processed locally.
+</p>
+
+<form method="post" enctype="multipart/form-data" class="space-y-4 max-w-md bg-slate-900 border border-slate-800 rounded-xl p-5 mb-8">
+    {% csrf_token %}
+    {% for field in form %}
+    <div>
+        <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>{% endif %}
+        {% if field.help_text %}<p class="text-slate-500 text-xs mt-1">{{ field.help_text }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+        Run Reconciliation
+    </button>
+</form>
+
+<h2 class="text-sm font-medium text-slate-400 mb-3">Past Runs</h2>
+<div class="space-y-2">
+    {% for run in past_runs %}
+    <a href="{% url 'payments:reconciliation_result' run.pk %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-lg px-4 py-3 text-sm">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="font-medium">{{ run.created_at|date:"d M Y, H:i" }}</p>
+                <p class="text-slate-500 text-xs mt-1">
+                    by {{ run.uploaded_by.get_full_name|default:run.uploaded_by.username }}
+                    · {{ run.total_rows_in_file }} rows · {{ run.matched_count }} matched
+                </p>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full {% if run.discrepancy_count %}bg-rose-900 text-rose-300{% else %}bg-emerald-900 text-emerald-300{% endif %}">
+                {{ run.discrepancy_count }} discrepanc{{ run.discrepancy_count|pluralize:"y,ies" }}
+            </span>
+        </div>
+    </a>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No reconciliation runs yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

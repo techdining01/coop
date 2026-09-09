@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}Al-Halal Savings & Loans{% endblock %}</title>
+
+    <!-- PWA: installable + native-app look on mobile -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AL-HALAL ISLAMIC  ">
+    <link rel="apple-touch-icon" href="{% static 'icons/company_logo.png' %}">
+    <link rel="icon" href="{% static 'icons/company_logo.png' %}">
+
+    
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'dist/output.css' %}">
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body
+    class="bg-slate-950 text-slate-100 min-h-screen"
+    x-data="{ modalOpen: false, modalContent: '' }"
+>
+    {% include "partials/_navbar.html" %}
+
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}{% endblock %}
+
+    <!-- Toast container: server responses append here via hx-swap-oob -->
+    <div
+        id="toast-container"
+        class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-80 max-w-[90vw]"
+        aria-live="polite"
+    ></div>
+
+    <!-- Modal shell: used for anything destructive or hard to undo -->
+    <div
+        x-show="modalOpen"
+        x-cloak
+        class="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"
+        @keydown.escape.window="modalOpen = false"
+    >
+        <div
+            @click.outside="modalOpen = false"
+            class="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md"
+            x-html="modalContent"
+        ></div>
+    </div>
+
+    {% include "partials/_toast_template.html" %}
+
+    <script>
+        // Registers /service-worker.js at root scope.
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/service-worker.js");
+            });
+        }
+    </script>
+    
+    <!-- Right before </body> in your base.html -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        // Loop through messages rendered by Django 5 backend
+        {% if messages %}
+            {% for message in messages %}
+                Toast.fire({
+                    // Django 5 message levels match perfectly with sweetalert icons
+                    icon: "{{ message.level_tag }}", 
+                    title: "{{ message|escapejs }}"
+                });
+            {% endfor %}
+        {% endif %}
+    });
+</script>
+
+</body>
+</html>

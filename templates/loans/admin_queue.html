@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Loan Queue — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-6">Loan Application Queue</h1>
+
+<div class="space-y-3">
+    {% for loan in loans %}
+    <a href="{% url 'loans:admin_review' loan.pk %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl px-5 py-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="font-medium">{{ loan.member.get_full_name|default:loan.member.username }}</p>
+                <p class="text-slate-500 text-xs mt-1">
+                    ₦{{ loan.principal|floatformat:2 }} · {{ loan.get_financing_structure_display }}
+                    · {{ loan.tenure_months }} months
+                </p>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300">{{ loan.get_status_display }}</span>
+        </div>
+    </a>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No applications waiting.</p>
+    {% endfor %}
+</div>
+{% endblock %}

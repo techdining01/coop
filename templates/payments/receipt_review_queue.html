@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Receipt Review Queue — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-6">Receipt Review Queue</h1>
+
+<div class="space-y-3">
+    {% for proof in proofs %}
+    <a
+        href="{% url 'payments:receipt_review_detail' proof.pk %}"
+        class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl px-5 py-4"
+    >
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="font-medium">{{ proof.member.get_full_name|default:proof.member.username }}</p>
+                <p class="text-slate-500 text-xs mt-1">
+                    Claims: {{ proof.get_claimed_type_display }} · ₦{{ proof.claimed_amount|floatformat:2 }}
+                    · {{ proof.uploaded_at|date:"d M, H:i" }}
+                </p>
+            </div>
+            {% if proof.status == 'possible_duplicate' %}
+            <span class="text-xs px-2 py-1 rounded-full bg-amber-900 text-amber-300">Possible Duplicate</span>
+            {% else %}
+            <span class="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-400">Pending Review</span>
+            {% endif %}
+        </div>
+    </a>
+    {% empty %}
+    <p class="text-slate-600 text-sm">Nothing waiting for review.</p>
+    {% endfor %}
+</div>
+{% endblock %}

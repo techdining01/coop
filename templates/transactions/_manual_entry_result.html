@@ -1,0 +1,47 @@
+{% include "partials/_toast_oob.html" %}
+
+<div class="grid md:grid-cols-2 gap-8">
+    <form
+        hx-post="{% url 'transactions:manual_entry' %}"
+        hx-target="#manual-entry-wrapper"
+        hx-swap="innerHTML"
+        class="space-y-4 bg-slate-900 border border-slate-800 rounded-xl p-5"
+    >
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>
+            {% endif %}
+            {% if field.help_text %}
+                <p class="text-slate-500 text-xs mt-1">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button
+            type="submit"
+            class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium"
+        >
+            Post to Ledger
+        </button>
+    </form>
+
+    <div>
+        <h2 class="text-sm font-medium text-slate-400 mb-3">Recent Manual Entries</h2>
+        <div class="space-y-2">
+            {% for entry in recent_entries %}
+            <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm">
+                <div>
+                    <p class="font-medium">{{ entry.member.get_full_name|default:entry.member.username }}</p>
+                    <p class="text-slate-500 text-xs">{{ entry.get_entry_type_display }} · {{ entry.created_at|date:"d M, H:i" }}</p>
+                </div>
+                <span class="font-semibold text-emerald-400">₦{{ entry.amount|floatformat:2 }}</span>
+            </div>
+            {% empty %}
+            <p class="text-slate-600 text-sm">No manual entries yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

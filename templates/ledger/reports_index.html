@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Reports — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-1">Bulk Reports</h1>
+<p class="text-sm text-slate-500 mb-6">CSV exports — open directly in Excel, Sheets, or Numbers.</p>
+
+<div class="grid sm:grid-cols-2 gap-4">
+    <a href="{% url 'ledger:report_member_statements' %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl p-5">
+        <p class="font-medium">Member Statements</p>
+        <p class="text-slate-500 text-xs mt-1">Every member's status and current savings balance.</p>
+    </a>
+    <a href="{% url 'ledger:report_loan_book' %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl p-5">
+        <p class="font-medium">Loan Book</p>
+        <p class="text-slate-500 text-xs mt-1">Every loan — principal, structure, status, outstanding balance.</p>
+    </a>
+    <a href="{% url 'ledger:report_savings_summary' %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl p-5">
+        <p class="font-medium">Savings Summary</p>
+        <p class="text-slate-500 text-xs mt-1">Total savings, active member count, average balance.</p>
+    </a>
+    <a href="{% url 'ledger:report_overdue' %}"
+       class="block bg-slate-900 border border-slate-800 hover:border-emerald-700 rounded-xl p-5">
+        <p class="font-medium">Overdue List</p>
+        <p class="text-slate-500 text-xs mt-1">Every currently overdue loan installment.</p>
+    </a>
+</div>
+{% endblock %}

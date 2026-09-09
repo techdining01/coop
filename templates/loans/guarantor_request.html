@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Guarantor Request — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-8">
+    <h1 class="text-xl font-semibold mb-2">Guarantor Request</h1>
+    <p class="text-sm text-slate-400 mb-6">
+        <span class="font-medium">{{ loan.member.get_full_name|default:loan.member.username }}</span>
+        is asking you to guarantee a loan of <span class="font-medium">₦{{ loan.principal|floatformat:2 }}</span>
+        ({{ loan.get_financing_structure_display }}, {{ loan.tenure_months }} months)
+        for: {{ loan.purpose }}.
+    </p>
+    <form method="post" class="flex gap-3">
+        {% csrf_token %}
+        <button type="submit" name="action" value="accept"
+                class="flex-1 bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+            Accept
+        </button>
+        <button type="submit" name="action" value="decline"
+                class="flex-1 bg-slate-800 hover:bg-rose-900 rounded-lg py-2 font-medium">
+            Decline
+        </button>
+    </form>
+</div>
+{% endblock %}

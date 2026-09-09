@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong — AL-HALAL ISLAMIC{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto mt-16 text-center">
+    <p class="text-5xl font-bold text-rose-400 mb-3">500</p>
+    <h1 class="text-lg font-semibold mb-2">Something went wrong on our end</h1>
+    <p class="text-sm text-slate-500 mb-6">
+        This wasn't your fault — an admin has been notified. Please try again shortly.
+    </p>
+    <a href="{% url 'dashboard:home' %}" class="inline-block bg-emerald-600 hover:bg-emerald-500 rounded-lg px-4 py-2 text-sm font-medium">
+        Go to Dashboard
+    </a>
+</div>
+{% endblock %}

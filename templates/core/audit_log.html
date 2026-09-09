@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Audit Log — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-6">Audit Log</h1>
+
+<form method="get" class="grid sm:grid-cols-3 gap-3 mb-6">
+    <input type="text" name="action" value="{{ action_filter }}" placeholder="Filter by action…" class="form-input">
+    <input type="text" name="target_model" value="{{ target_filter }}" placeholder="Filter by target model…" class="form-input">
+    <input type="text" name="actor" value="{{ actor_filter }}" placeholder="Filter by actor username…" class="form-input">
+    <button type="submit" class="sm:col-span-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 text-sm font-medium">
+        Apply Filters
+    </button>
+</form>
+
+<div class="space-y-2">
+    {% for log in page_obj %}
+    <div class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-sm">
+        <div class="flex items-center justify-between">
+            <span class="font-medium">{{ log.action }}</span>
+            <span class="text-slate-500 text-xs">{{ log.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+        <p class="text-slate-500 text-xs mt-1">
+            {{ log.actor.get_full_name|default:log.actor.username|default:"System" }}
+            → {{ log.target_model }}#{{ log.target_id }}
+        </p>
+        {% if log.reason %}
+        <p class="text-amber-400 text-xs mt-1">Reason: {{ log.reason }}</p>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No audit log entries match these filters.</p>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex items-center justify-between mt-6 text-sm">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&action={{ action_filter }}&target_model={{ target_filter }}&actor={{ actor_filter }}"
+           class="text-emerald-400 hover:underline">&larr; Previous</a>
+    {% else %}<span></span>{% endif %}
+    <span class="text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&action={{ action_filter }}&target_model={{ target_filter }}&actor={{ actor_filter }}"
+           class="text-emerald-400 hover:underline">Next &rarr;</a>
+    {% else %}<span></span>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

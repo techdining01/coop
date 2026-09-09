@@ -1,0 +1,26 @@
+{% comment %}
+Usage from any HTMX response: include _toast_oob.html with a message/kind
+in context. It renders an out-of-band swap that appends into
+#toast-container without disturbing the rest of the response.
+Kinds: "success" (green), "error" (red), "info" (slate).
+{% endcomment %}
+
+<script>
+    function coopToast(message, kind) {
+        return {
+            message,
+            kind,
+            visible: true,
+            init() {
+                setTimeout(() => { this.visible = false }, 5000);
+            },
+            colorClasses() {
+                return {
+                    success: "bg-emerald-600 border-emerald-400",
+                    error: "bg-rose-600 border-rose-400",
+                    info: "bg-slate-700 border-slate-500",
+                }[this.kind] || "bg-slate-700 border-slate-500";
+            }
+        }
+    }
+</script>

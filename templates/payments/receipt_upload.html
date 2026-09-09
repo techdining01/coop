@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Upload Receipt — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-1">Upload a Receipt</h1>
+<p class="text-sm text-slate-500 mb-6">
+    For payments that didn't go through this account. An admin reads the
+    receipt themselves and confirms it.
+</p>
+
+<div class="grid md:grid-cols-2 gap-8">
+    <form method="post" enctype="multipart/form-data" class="space-y-4 bg-slate-900 border border-slate-800 rounded-xl p-5">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>
+            {% endif %}
+            {% if field.help_text %}
+                <p class="text-slate-500 text-xs mt-1">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+            Upload
+        </button>
+    </form>
+
+    <div>
+        <h2 class="text-sm font-medium text-slate-400 mb-3">Your Uploads</h2>
+        <div class="space-y-2">
+            {% for proof in my_proofs %}
+            <div class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-sm">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium">{{ proof.get_claimed_type_display }}</span>
+                    <span
+                        class="text-xs px-2 py-0.5 rounded-full
+                        {% if proof.status == 'confirmed' %}bg-emerald-900 text-emerald-300
+                        {% elif proof.status == 'rejected' %}bg-rose-900 text-rose-300
+                        {% elif proof.status == 'possible_duplicate' %}bg-amber-900 text-amber-300
+                        {% else %}bg-slate-800 text-slate-400{% endif %}"
+                    >
+                        {{ proof.get_status_display }}
+                    </span>
+                </div>
+                <p class="text-slate-500 text-xs mt-1">₦{{ proof.claimed_amount|floatformat:2 }} · {{ proof.uploaded_at|date:"d M, H:i" }}</p>
+                {% if proof.status == 'rejected' and proof.rejection_reason %}
+                    <p class="text-rose-400 text-xs mt-1">{{ proof.rejection_reason }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-slate-600 text-sm">No uploads yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

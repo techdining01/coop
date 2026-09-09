@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Apply for a Loan — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-1">Apply for a Loan</h1>
+<p class="text-sm text-slate-500 mb-6">
+    AL-HALAL is interest-free cooperative society, for growth and prosperity 
+</p>
+
+{% if form.non_field_errors %}
+<div class="bg-rose-900/40 border border-rose-700 rounded-lg p-3 mb-4 text-sm text-rose-300">
+    {{ form.non_field_errors|join:", " }}
+</div>
+{% endif %}
+
+{% if eligibility.enforced %}
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6 text-sm space-y-1">
+    <p class="text-slate-400 mb-2">Your current standing</p>
+    <p class="{% if eligibility.has_paid_share_capital %}text-emerald-400{% else %}text-rose-400{% endif %}">
+        {% if eligibility.has_paid_share_capital %}✓{% else %}✗{% endif %} Shared Capital contribution
+    </p>
+    <p class="text-slate-300">Membership: {{ eligibility.membership_duration_months|floatformat:0 }} month(s)</p>
+    <p class="text-slate-300">Savings balance: ₦{{ eligibility.savings_balance|floatformat:2 }}</p>
+</div>
+{% endif %}
+
+<form method="post" class="space-y-4 max-w-md bg-slate-900 border border-slate-800 rounded-xl p-5">
+    {% csrf_token %}
+    {% for field in form %}
+    <div>
+        <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+            <p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>
+        {% endif %}
+        {% if field.help_text %}
+            <p class="text-slate-500 text-xs mt-1">{{ field.help_text }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+        Submit Application
+    </button>
+</form>
+{% endblock %}

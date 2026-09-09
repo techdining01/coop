@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Record Repayment — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+
+<a href="{% url 'loans:admin_review' loan.pk %}" class="text-sm text-slate-500 hover:text-emerald-400">&larr; Back to loan</a>
+
+<h1 class="text-xl font-semibold mt-2 mb-6">
+    Record Repayment — {{ loan.member.get_full_name|default:loan.member.username }}
+</h1>
+
+{% if error %}
+<div class="bg-rose-900/40 border border-rose-700 rounded-lg p-3 mb-4 text-sm text-rose-300">{{ error }}</div>
+{% endif %}
+
+<form method="post" class="max-w-md space-y-4 bg-slate-900 border border-slate-800 rounded-xl p-5">
+    {% csrf_token %}
+    {% for field in form %}
+    <div>
+        <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+        Post Repayment
+    </button>
+</form>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Ledger Exports — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-1">Weekly Ledger Exports</h1>
+<p class="text-sm text-slate-500 mb-6">
+    Auto-generated weekly. Download and store a copy off-site (Google Drive, email to
+    self, etc.) — the local file is deleted a couple of minutes after you download it.
+</p>
+
+<div class="space-y-2">
+    {% for export in exports %}
+    <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-sm">
+        <div>
+            <p class="font-medium">{{ export.period_start|date:"d M Y" }} – {{ export.period_end|date:"d M Y" }}</p>
+            <p class="text-slate-500 text-xs mt-1">
+                Generated {{ export.generated_at|date:"d M Y, H:i" }}
+                {% if export.downloaded_at %}
+                    · downloaded by {{ export.downloaded_by.get_full_name|default:export.downloaded_by.username }}
+                    on {{ export.downloaded_at|date:"d M Y, H:i" }}
+                {% endif %}
+            </p>
+        </div>
+        {% if export.deleted_at %}
+            <span class="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-500">Downloaded &amp; cleaned up</span>
+        {% elif export.downloaded_at %}
+            <span class="text-xs px-2 py-1 rounded-full bg-amber-900 text-amber-300">Downloaded — cleanup pending</span>
+        {% else %}
+            <a href="{% url 'ledger:export_download' export.pk %}"
+               class="bg-emerald-600 hover:bg-emerald-500 rounded-lg px-3 py-1.5 text-xs font-medium">
+                Download
+            </a>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-slate-600 text-sm">No exports generated yet — the weekly job hasn't run.</p>
+    {% endfor %}
+</div>
+{% endblock %}

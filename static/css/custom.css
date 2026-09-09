@@ -1,0 +1,32 @@
+/* Applies to every text/number/password/select/textarea field regardless of
+   whether the view's form explicitly set form-input/form-select classes —
+   Django's built-in AuthenticationForm, for instance, doesn't. */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea,
+.form-input,
+.form-select {
+    width: 100%;
+    background-color: rgb(15 23 42);
+    border: 1px solid rgb(51 65 85);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    color: rgb(241 245 249);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: rgb(16 185 129);
+    box-shadow: 0 0 0 1px rgb(16 185 129);
+}
+
+[x-cloak] {
+    display: none !important;
+}

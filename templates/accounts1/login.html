@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Log in — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto mt-12">
+    <h1 class="text-xl font-semibold mb-6">Log in</h1>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            <p class="text-rose-400 text-sm">{{ form.non_field_errors|join:", " }}</p>
+        {% endif %}
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+            Log in
+        </button>
+    </form>
+    <p class="text-sm text-slate-500 mt-4">
+        Not a member yet? <a href="{% url 'accounts:register' %}" class="text-emerald-400">Register</a>
+    </p>
+</div>
+{% endblock %}

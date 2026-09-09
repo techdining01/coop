@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Review Loan — AL-HALAL ISLAMIC  {% endblock %}
+{% block content %}
+
+<a href="{% url 'loans:admin_queue' %}" class="text-sm text-slate-500 hover:text-emerald-400">&larr; Back to queue</a>
+
+<h1 class="text-xl font-semibold mt-2 mb-1">{{ loan.member.get_full_name|default:loan.member.username }}</h1>
+<p class="text-sm text-slate-500 mb-6">
+    ₦{{ loan.principal|floatformat:2 }} · {{ loan.get_financing_structure_display }}
+    <!-- {% if loan.murabaha_profit_amount %} · profit margin ₦{{ loan.murabaha_profit_amount|floatformat:2 }}{% endif %} -->
+    · {{ loan.tenure_months }} months · total repayable ₦{{ loan.total_repayable|floatformat:2 }}
+</p>
+<p class="text-sm text-slate-400 mb-6">Purpose: {{ loan.purpose }}</p>
+
+{% if loan.guarantor %}
+<p class="text-sm text-slate-400 mb-6">
+    Guarantor: {{ loan.guarantor.get_full_name|default:loan.guarantor.username }}
+    {% if loan.guarantor_accepted_at %} — accepted{% elif loan.guarantor_declined_at %} — declined{% else %} — awaiting response{% endif %}
+</p>
+{% endif %}
+
+{% if error %}
+<div class="bg-rose-900/40 border border-rose-700 rounded-lg p-3 mb-4 text-sm text-rose-300">{{ error }}</div>
+{% endif %}
+
+<div class="max-w-md">
+    {% if loan.status == 'guarantor_pending' %}
+        <p class="text-sm text-amber-400">Waiting for the guarantor to respond — nothing to review yet.</p>
+
+    {% elif loan.status == 'pending' %}
+        <form method="post" action="{% url 'loans:admin_review' loan.pk %}" class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="approve">
+            <button type="submit"
+                    class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+                Approve Loan
+            </button>
+        </form>
+
+        <form method="post" action="{% url 'loans:admin_review' loan.pk %}" class="bg-slate-900 border border-slate-800 rounded-xl p-5 mt-4 space-y-3"
+              x-data="{ confirmingReject: false }">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <button type="button" @click="confirmingReject = true"
+                    class="w-full bg-slate-800 hover:bg-rose-900 rounded-lg py-2 font-medium">
+                Reject
+            </button>
+            <div x-show="confirmingReject" x-cloak class="space-y-3">
+                {% for field in rejection_form %}
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<p class="text-rose-400 text-xs mt-1">{{ field.errors|join:", " }}</p>{% endif %}
+                </div>
+                {% endfor %}
+                <div class="flex gap-3">
+                    <button type="submit"
+                            class="flex-1 bg-rose-600 hover:bg-rose-500 rounded-lg py-2 font-medium">
+                        Confirm Rejection
+                    </button>
+                    <button type="button" @click="confirmingReject = false"
+                            class="flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg py-2 font-medium">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    {% elif loan.status == 'approved' %}
+        <form method="post" action="{% url 'loans:admin_review' loan.pk %}" class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="disburse">
+            <p class="text-sm text-slate-400 mb-3">
+                Disbursing will post the full amount to your loan ledger and generate the repayment schedule.
+            </p>
+            <button type="submit"
+                    class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+                Disburse ₦{{ loan.total_repayable|floatformat:2 }}
+            </button>
+        </form>
+
+    {% elif loan.status == 'active' %}
+        <a href="{% url 'loans:record_repayment' loan.pk %}"
+           class="inline-block bg-emerald-600 hover:bg-emerald-500 rounded-lg px-4 py-2 text-sm font-medium">
+            Record a Repayment
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
