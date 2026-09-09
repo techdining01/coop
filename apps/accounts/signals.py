@@ -3,7 +3,7 @@ Keeps a user's Django Group membership in sync with their `role` field,
 so the simple role dropdown (used everywhere else in the app — templates,
 is_admin_tier, registration) stays the single source of truth, while the
 actual permission enforcement goes through Django's real Group/Permission
-system underneath. A role change via Django admin or code
+system underneath (Phase 6). A role change via Django admin or code
 immediately updates which group(s) the user is in.
 
 MEMBER and SUPERADMIN intentionally map to no group: a member has no
@@ -18,7 +18,7 @@ from django.contrib.auth.models import Group
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from.models import User
+from .models import User
 
 ROLE_TO_GROUP_NAME = {
     User.Role.TREASURER: "Treasurer",

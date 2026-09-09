@@ -115,7 +115,7 @@ def reports_index_view(request):
 @user_passes_test(_is_admin_tier)
 @permission_required("core.can_view_reports", raise_exception=True)
 def report_member_statements_csv(request):
-    from apps.accounts1.models import MemberProfile
+    from apps.accounts.models import MemberProfile
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="member-statements.csv"'
@@ -168,7 +168,7 @@ def report_loan_book_csv(request):
 @user_passes_test(_is_admin_tier)
 @permission_required("core.can_view_reports", raise_exception=True)
 def report_savings_summary_csv(request):
-    from apps.accounts1.models import MemberProfile
+    from apps.accounts.models import MemberProfile
 
     active_profiles = MemberProfile.objects.filter(status=MemberProfile.Status.ACTIVE).select_related("user")
     balances = [LedgerService.get_savings_balance(p.user) for p in active_profiles]

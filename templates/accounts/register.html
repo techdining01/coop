@@ -1,12 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Register — {{ COOPERATIVE_SHORT_NAME }}{% endblock %}
+{% block title %}Register — AL-HALAL ISLAMIC  {% endblock %}
 {% block content %}
 <div class="max-w-md mx-auto mt-8">
-    <h1 class="text-xl font-semibold mb-1">Join the Cooperative</h1>
+    <h1 class="text-xl font-semibold mb-1">Join AL-HALAL ISLAMIC Cooperative</h1>
     <p class="text-sm text-slate-500 mb-6">
         Your BVN/NIN is stored encrypted and used only to verify your identity.
-        From Phase 2 onward, it's cross-checked against PayVessel's Verification API
-        before your membership is activated.
     </p>
     <form method="post" class="space-y-4">
         {% csrf_token %}

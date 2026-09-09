@@ -20,7 +20,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from apps.accounts1.models import MemberProfile
+from apps.accounts.models import MemberProfile
 from apps.ledger.models import LedgerEntry
 from apps.ledger.services import LedgerService
 

@@ -1,22 +1,20 @@
 """
-Role-based admin tiers. This command creates/updates three Django Groups
-with a REASONABLE DEFAULT permission mapping I came up with — not a spec
-anyone handed me, since I was only told "different permission levels"
-without being told exactly which action belongs to which tier. My
+Phase 6 — role-based admin tiers. Creates/updates three
+Django Groups with a REASONABLE DEFAULT permission mapping — not a spec
+handed down anywhere, since the design only said "different permission
+levels" without naming exactly which action belongs to which tier. This
 mapping is a sensible cooperative-society default (Treasurer = money
 movement, Secretary = membership admin, Chairman = loan approval + both
-oversight views), and I built it to be ADJUSTED via Django admin's
-Groups UI afterward, not treated as fixed — that's the whole reason I
-used Django's Group/Permission system instead of hardcoding checks in
-Python.
+oversight views) and is meant to be ADJUSTED via Django admin's Groups
+UI afterward, not treated as fixed — that's the whole point of using
+Django's Group/Permission system instead of hardcoding checks in Python.
 
-I deliberately did NOT make Superadmin a Group — Django's real
-`is_superuser` flag already bypasses every permission check
-automatically. I'd pair User.role=SUPERADMIN with
-is_superuser=True/is_staff=True via Django admin or createsuperuser;
-the role field alone won't grant elevated access on its own, since every
-permission check I added goes through Django's has_perm(), not the role
-field directly.
+Superadmin is NOT a Group here — Django's real `is_superuser` flag
+already bypasses every permission check automatically. Pair
+User.role=SUPERADMIN with is_superuser=True/is_staff=True via Django
+admin or createsuperuser; don't expect the role field alone to grant
+elevated access, since the permission checks added in this phase go
+through Django's has_perm(), not the role field directly.
 
 Safe to re-run — get_or_create + set() makes this idempotent.
 """
@@ -45,7 +43,7 @@ ROLE_PERMISSIONS = {
 
 
 class Command(BaseCommand):
-    help = "Create/update the Treasurer, Secretary, and Chairman permission groups."
+    help = "Create/update the Treasurer, Secretary, and Chairman permission groups (Phase 6 default mapping)."
 
     def handle(self, *args, **options):
         for group_name, perm_specs in ROLE_PERMISSIONS.items():

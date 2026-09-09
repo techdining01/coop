@@ -1,6 +1,6 @@
 from django import forms
 
-from apps.accounts1.models import MemberProfile, User
+from apps.accounts.models import MemberProfile, User
 
 from .models import LoanEligibilityPolicy
 

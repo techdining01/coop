@@ -1,41 +1,76 @@
 from django.contrib.auth import login as auth_login
-from django.contrib.auth import logout as auth_logout
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
-from django.contrib.auth.views import LoginView
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.views import LoginView, LogoutView
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 
-from.forms import MemberRegistrationForm
-from.models import MemberProfile
+from .forms import MemberRegistrationForm
+from .models import MemberProfile
 
 
 class CoopLoginView(LoginView):
     template_name = "accounts/login.html"
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "You have been successfully logged in!")
+        return response
+
+
+class CoopLogoutView(LogoutView):
+    next_page = reverse_lazy("accounts:login")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == "GET":
+            return render(request, "accounts/logout_confirm.html")
+        messages.success(request, "You have been successfully logged out!")
+        return super().dispatch(request, *args, **kwargs)
+
+
+def _is_admin_tier(user):
+    return user.is_authenticated and user.is_admin_tier
+
 
 @login_required
-def logout_view(request):
+@user_passes_test(_is_admin_tier)
+@permission_required("accounts.can_approve_members", raise_exception=True)
+def approve_members_view(request):
     """
-    Separate confirmation step before logging out — GET shows "are you
-    sure?", POST actually performs the logout. Written as an explicit
-    function view rather than relying on Django's built-in LogoutView,
-    since its GET/POST handling has changed across Django versions and
-    an explicit two-step flow here is easier to reason about without
-    being able to run the app to verify version-specific behavior.
+    In-app equivalent of MemberProfileAdmin.approve_members — Secretary /
+    Chairman can promote pending profiles to ACTIVE without going through
+    Django admin. Same PayVessel reserved-account side-effect (queued
+    async, never blocks the response).
     """
+    pending = MemberProfile.objects.exclude(status=MemberProfile.Status.ACTIVE).select_related("user")
+
     if request.method == "POST":
-        auth_logout(request)
-        return redirect("accounts:login")
-    return render(request, "accounts/logout_confirm.html")
+        from apps.payments.tasks import create_reserved_account_task
+
+        ids = request.POST.getlist("profile_ids")
+        approved = 0
+        for profile in pending.filter(pk__in=ids):
+            profile.status = MemberProfile.Status.ACTIVE
+            profile.save(update_fields=["status"])
+            create_reserved_account_task.delay(profile.pk)
+            approved += 1
+        if approved:
+            messages.success(request, f"Approved {approved} member(s). Reserved-account creation queued.")
+        else:
+            messages.warning(request, "No members selected.")
+        return redirect("accounts:approve_members")
+
+    return render(request, "accounts/approve_members.html", {"pending": pending})
 
 
 def register_view(request):
     """
     Registration + admin-approval workflow. BVN/NIN verification against
-    PayVessel's API is fired async from MemberRegistrationForm.save() — it never blocks this view. Status starts as PENDING
-    regardless of the verification result; an admin approves via the
-    in-app approval queue (member_approval_queue_view below) or Django
-    admin's "Approve selected members" action — either way, approval is
-    what triggers PayVessel reserved account creation.
+    PayVessel's API is fired async from MemberRegistrationForm.save()
+    (Section 5a) — it never blocks this view. Status starts as PENDING
+    regardless of the verification result; an admin approves manually via
+    Django admin (MemberProfileAdmin.approve_members), which is also what
+    triggers PayVessel reserved account creation.
     """
     if request.method == "POST":
         form = MemberRegistrationForm(request.POST)
@@ -51,57 +86,3 @@ def register_view(request):
 @login_required
 def pending_approval_view(request):
     return render(request, "accounts/pending_approval.html")
-
-
-def _is_admin_tier(user):
-    return user.is_authenticated and user.is_admin_tier
-
-
-@login_required
-@user_passes_test(_is_admin_tier)
-@permission_required("accounts.can_approve_members", raise_exception=True)
-def member_approval_queue_view(request):
-    """
-    In-app equivalent of MemberProfileAdmin.approve_members — previously
-    the ONLY way to approve a new member was Django's own /admin/, which
-    isn't accessible to every admin tier and doesn't match the rest of
-    this app's UI. Same permission gate as the Django admin action
-    (accounts.can_approve_members), so a Secretary/Chairman can now do
-    this without ever touching /admin/.
-    """
-    profiles = (
-        MemberProfile.objects.filter(status=MemberProfile.Status.PENDING).select_related("user").prefetch_related("user__kyc_verifications").order_by("joined_at")
-    )
-    return render(request, "accounts/member_approval_queue.html", {"profiles": profiles})
-
-
-@login_required
-@user_passes_test(_is_admin_tier)
-@permission_required("accounts.can_approve_members", raise_exception=True)
-def member_approval_detail_view(request, pk):
-    profile = get_object_or_404(MemberProfile, pk=pk, status=MemberProfile.Status.PENDING)
-    latest_kyc = profile.user.kyc_verifications.first()  # ordered -created_at
-
-    if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "approve":
-            from apps.payments.tasks import create_reserved_account_task
-
-            profile.status = MemberProfile.Status.ACTIVE
-            profile.save(update_fields=["status"])
-            create_reserved_account_task.delay(profile.pk)
-            return redirect("accounts:member_approval_queue")
-        elif action == "reject":
-            reason = request.POST.get("rejection_reason", "").strip()
-            if not reason:
-                return render(
-                    request,
-                    "accounts/member_approval_detail.html",
-                    {"profile": profile, "latest_kyc": latest_kyc, "error": "A rejection reason is required."},
-                )
-            profile.status = MemberProfile.Status.REJECTED
-            profile.rejection_reason = reason
-            profile.save(update_fields=["status", "rejection_reason"])
-            return redirect("accounts:member_approval_queue")
-
-    return render(request, "accounts/member_approval_detail.html", {"profile": profile, "latest_kyc": latest_kyc})

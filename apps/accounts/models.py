@@ -8,7 +8,7 @@ class User(AbstractUser):
     """
     Single auth model for everyone who logs in — members and admins alike.
     `role` distinguishes a plain member from the admin tiers described in
-    the system design.
+    the system design ( — Treasurer, Secretary/Chairman, etc.).
     Member-specific KYC data lives on the linked MemberProfile, not here,
     so an admin-only account never carries irrelevant fields.
     """
@@ -35,7 +35,7 @@ class MemberProfile(models.Model):
     """
     KYC + membership status for a Member-role user.
     BVN/NIN are stored via EncryptedCharField (Fernet, see apps.core.fields) —
-    never logged, never exposed outside what's strictly needed.
+    never logged, never exposed outside what's strictly needed (Section 7).
     """
 
     class Status(models.TextChoices):
@@ -43,7 +43,6 @@ class MemberProfile(models.Model):
         ACTIVE = "active", "Active"
         SUSPENDED = "suspended", "Suspended"
         EXITED = "exited", "Exited"
-        REJECTED = "rejected", "Registration Rejected"
 
     class IdType(models.TextChoices):
         BVN = "bvn", "BVN"
@@ -57,7 +56,7 @@ class MemberProfile(models.Model):
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     id_type = models.CharField(max_length=10, choices=IdType.choices)
-    id_number = EncryptedCharField(max_length=64)  # BVN or NIN, encrypted at rest
+    id_number = EncryptedCharField(max_length=120)  # BVN or NIN, encrypted at rest
     gender = models.CharField(max_length=10, choices=Gender.choices)  # required by PayVessel's verification API
 
     date_of_birth = models.DateField(null=True, blank=True)
@@ -65,12 +64,16 @@ class MemberProfile(models.Model):
     next_of_kin_phone = models.CharField(max_length=20, blank=True)
     employment_info = models.CharField(max_length=255, blank=True)
 
-    # Filled in once a PayVessel reserved virtual account is created
+    # Filled in once a PayVessel reserved virtual account is created 
     payvessel_account_number = models.CharField(max_length=20, blank=True)
     payvessel_bank_name = models.CharField(max_length=100, blank=True)
 
+    # Last error received from PayVessel during reserved-account creation.
+    # Human-readable, for admin debugging in Django admin or the approve view.
+    payvessel_error = models.TextField(blank=True)
+    payvessel_error_count = models.PositiveIntegerField(default=0)
+
     joined_at = models.DateTimeField(auto_now_add=True)
-    rejection_reason = models.TextField(blank=True)
 
     class Meta:
         indexes = [models.Index(fields=["status"])]
@@ -90,7 +93,7 @@ class MemberProfile(models.Model):
 
 class KYCVerification(models.Model):
     """
-    Result of a single BVN/NIN verification API call. One
+    Result of a single BVN/NIN verification API call (Section 5a). One
     member may have several rows over time (e.g. a retry after a typo
     correction) — this is a log, not a single mutable status field, so the
     history of verification attempts is never lost.

@@ -107,7 +107,7 @@ def _dashboard_analytics():
     from django.db.models import Sum
     from django.utils import timezone
 
-    from apps.accounts1.models import MemberProfile
+    from apps.accounts.models import MemberProfile
 
     INFLOW_TYPES = [
         LedgerEntry.EntryType.DEPOSIT,
@@ -152,7 +152,7 @@ def _dashboard_analytics():
 
 
 def _active_members():
-    from apps.accounts1.models import MemberProfile
+    from apps.accounts.models import MemberProfile
 
     return [p.user for p in MemberProfile.objects.filter(status=MemberProfile.Status.ACTIVE).select_related("user")]
 
