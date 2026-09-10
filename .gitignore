@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .env
+.env_docker
 *.sqlite3
 /staticfiles/
 /mediafiles/

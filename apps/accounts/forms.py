@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import MemberProfile, User
+from.models import MemberProfile, User
 
 
 class MemberRegistrationForm(UserCreationForm):
@@ -15,7 +15,7 @@ class MemberRegistrationForm(UserCreationForm):
     id_type = forms.ChoiceField(
         choices=MemberProfile.IdType.choices,
         widget=forms.Select(attrs={"class": "form-select"}),
-        help_text="Verified your BVN/NIN before your membership is activated.",
+        help_text="Verified against PayVessel's BVN/NIN API before your membership is activated.",
     )
     id_number = forms.CharField(
         max_length=settings.BVN_LENGTH,

@@ -7,6 +7,7 @@ class AccountsConfig(AppConfig):
     label = "accounts"
 
     def ready(self):
-        # Registers the role -> Group sync signal . Imported here,
-       
-        from . import signals  # noqa: F401
+        # Registers the role -> Group sync signal. Imported here,
+        # not at module top-level, per Django's standard signal-registration
+        # pattern — avoids app-loading-order issues.
+        from. import signals  # noqa: F401

@@ -8,7 +8,7 @@ class User(AbstractUser):
     """
     Single auth model for everyone who logs in — members and admins alike.
     `role` distinguishes a plain member from the admin tiers described in
-    the system design ( — Treasurer, Secretary/Chairman, etc.).
+    the system design.
     Member-specific KYC data lives on the linked MemberProfile, not here,
     so an admin-only account never carries irrelevant fields.
     """
@@ -35,7 +35,7 @@ class MemberProfile(models.Model):
     """
     KYC + membership status for a Member-role user.
     BVN/NIN are stored via EncryptedCharField (Fernet, see apps.core.fields) —
-    never logged, never exposed outside what's strictly needed (Section 7).
+    never logged, never exposed outside what's strictly needed.
     """
 
     class Status(models.TextChoices):
@@ -43,6 +43,7 @@ class MemberProfile(models.Model):
         ACTIVE = "active", "Active"
         SUSPENDED = "suspended", "Suspended"
         EXITED = "exited", "Exited"
+        REJECTED = "rejected", "Registration Rejected"
 
     class IdType(models.TextChoices):
         BVN = "bvn", "BVN"
@@ -52,28 +53,30 @@ class MemberProfile(models.Model):
         MALE = "MALE", "Male"
         FEMALE = "FEMALE", "Female"
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="member_profile")
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="member_profile"
+    )
 
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
     id_type = models.CharField(max_length=10, choices=IdType.choices)
     id_number = EncryptedCharField(max_length=120)  # BVN or NIN, encrypted at rest
-    gender = models.CharField(max_length=10, choices=Gender.choices)  # required by PayVessel's verification API
+    gender = models.CharField(
+        max_length=10, choices=Gender.choices
+    )  # required by PayVessel's verification API
 
     date_of_birth = models.DateField(null=True, blank=True)
     next_of_kin_name = models.CharField(max_length=255, blank=True)
     next_of_kin_phone = models.CharField(max_length=20, blank=True)
     employment_info = models.CharField(max_length=255, blank=True)
 
-    # Filled in once a PayVessel reserved virtual account is created 
-    payvessel_account_number = models.CharField(max_length=20, blank=True)
+    # Filled in once a PayVessel reserved virtual account is created
+    payvessel_account_number = models.CharField(max_length=40, blank=True)
     payvessel_bank_name = models.CharField(max_length=100, blank=True)
 
-    # Last error received from PayVessel during reserved-account creation.
-    # Human-readable, for admin debugging in Django admin or the approve view.
-    payvessel_error = models.TextField(blank=True)
-    payvessel_error_count = models.PositiveIntegerField(default=0)
-
     joined_at = models.DateTimeField(auto_now_add=True)
+    rejection_reason = models.TextField(blank=True)
 
     class Meta:
         indexes = [models.Index(fields=["status"])]
@@ -93,7 +96,7 @@ class MemberProfile(models.Model):
 
 class KYCVerification(models.Model):
     """
-    Result of a single BVN/NIN verification API call (Section 5a). One
+    Result of a single BVN/NIN verification API call. One
     member may have several rows over time (e.g. a retry after a typo
     correction) — this is a log, not a single mutable status field, so the
     history of verification attempts is never lost.
@@ -104,9 +107,13 @@ class KYCVerification(models.Model):
         MISMATCH = "mismatch", "Mismatch"
         PENDING = "pending", "Pending / Error"
 
-    member = models.ForeignKey(User, on_delete=models.CASCADE, related_name="kyc_verifications")
+    member = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="kyc_verifications"
+    )
     id_type = models.CharField(max_length=10, choices=MemberProfile.IdType.choices)
-    match_status = models.CharField(max_length=10, choices=MatchStatus.choices, default=MatchStatus.PENDING)
+    match_status = models.CharField(
+        max_length=10, choices=MatchStatus.choices, default=MatchStatus.PENDING
+    )
     # Raw match-field response from PayVessel (name_match_rlt, birthday_match_rlt,
     # etc.) — or an error payload if the call failed. Never contains the raw
     # BVN/NIN itself, only PayVessel's verdict on it.

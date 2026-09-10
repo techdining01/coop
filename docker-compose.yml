@@ -21,8 +21,8 @@ services:
     build: .
     restart: unless-stopped
     entrypoint: /docker-entrypoint.sh db
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
-    env_file: .env
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2
+    env_file: .env_docker
     volumes:
       - ./mediafiles:/app/mediafiles
       - ./staticfiles:/app/staticfiles
@@ -31,14 +31,26 @@ services:
     depends_on:
       - db
       - redis
+    expose:
+      - "8000"  # accessible to nginx service only
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
     ports:
-      - "127.0.0.1:8000:8000"  # nginx fronts this — not exposed directly
+      - "127.0.0.1:8000:80"
+    volumes:
+      - ./nginx/docker-default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./staticfiles:/app/staticfiles:ro
+      - ./mediafiles:/app/mediafiles:ro
 
   worker:
     build: .
     restart: unless-stopped
     command: celery -A config worker -l info
-    env_file: .env
+    env_file: .env_docker
     volumes:
       - ./mediafiles:/app/mediafiles
       - ./backups:/app/backups
@@ -51,7 +63,7 @@ services:
     build: .
     restart: unless-stopped
     command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-    env_file: .env
+    env_file: .env_docker
     depends_on:
       - db
       - redis

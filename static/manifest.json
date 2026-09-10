@@ -1,6 +1,6 @@
 {
   "name": "Al-Halal Islamic Cooperative Savings & Loans",
-  "short_name": "AL-HALAL ISLAMIC  ",
+  "short_name": "AL-HALAL",
   "description": "Savings, loans, and cooperative membership management",
   "start_url": "/",
   "scope": "/",
@@ -9,7 +9,13 @@
   "theme_color": "#0f172a",
   "orientation": "portrait",
   "icons": [
-    { "src": "/static/icons/company_logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/static/icons/company_logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/static/icons/company_logo_72x72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "/static/icons/company_logo_96x96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "/static/icons/company_logo_128x128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/static/icons/company_logo_144x144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "/static/icons/company_logo_152x152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "/static/icons/company_logo_192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/static/icons/company_logo_512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/static/icons/company_logo_1024x1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
   ]
 }

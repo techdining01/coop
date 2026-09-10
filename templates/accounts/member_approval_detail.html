@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Review Member — {{ COOPERATIVE_SHORT_NAME }}{% endblock %}
+{% block content %}
+
+    <a href="{% url 'accounts:approve_members' %}" class="text-sm text-slate-500 hover:text-emerald-400">&larr; Back to queue</a>
+
+<h1 class="text-xl font-semibold mt-2 mb-1">{{ profile.user.get_full_name|default:profile.user.username }}</h1>
+<p class="text-sm text-slate-500 mb-6">
+    {{ profile.user.email }} · {{ profile.user.phone_number }} · registered {{ profile.joined_at|date:"d M Y" }}
+</p>
+
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6 text-sm space-y-1">
+    <p class="text-slate-400 mb-2">Identity Verification</p>
+    {% if latest_kyc %}
+        <p class="{% if latest_kyc.match_status == 'match' %}text-emerald-400{% elif latest_kyc.match_status == 'mismatch' %}text-rose-400{% else %}text-slate-400{% endif %}">
+            {{ latest_kyc.get_id_type_display }} — {{ latest_kyc.get_match_status_display }}
+        </p>
+        <p class="text-slate-600 text-xs">Checked {{ latest_kyc.created_at|date:"d M Y, H:i" }}</p>
+        {% if latest_kyc.match_status == 'mismatch' %}
+        <p class="text-amber-400 text-xs mt-2">
+            The name/DOB PayVessel returned didn't match what this member entered. Review carefully before approving.
+        </p>
+        {% endif %}
+    {% else %}
+        <p class="text-slate-500">No verification result yet — the check may still be running, or the ID type doesn't support automated verification yet.</p>
+    {% endif %}
+</div>
+
+{% if error %}
+<div class="bg-rose-900/40 border border-rose-700 rounded-lg p-3 mb-4 text-sm text-rose-300">{{ error }}</div>
+{% endif %}
+
+<div x-data="{ confirmingReject: false }" class="max-w-md">
+    <form method="post" class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+        {% csrf_token %}
+        <div x-show="!confirmingReject" class="flex gap-3">
+            <button type="submit" name="action" value="approve"
+                    class="flex-1 bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
+                Approve Membership
+            </button>
+            <button type="button" @click="confirmingReject = true"
+                    class="flex-1 bg-slate-800 hover:bg-rose-900 rounded-lg py-2 font-medium">
+                Reject
+            </button>
+        </div>
+        <div x-show="confirmingReject" x-cloak class="space-y-3">
+            <label class="block text-sm text-slate-400">Rejection reason (required)</label>
+            <textarea name="rejection_reason" rows="2" class="form-input" placeholder="e.g. identity mismatch, incomplete details"></textarea>
+            <div class="flex gap-3">
+                <button type="submit" name="action" value="reject"
+                        class="flex-1 bg-rose-600 hover:bg-rose-500 rounded-lg py-2 font-medium">
+                    Confirm Rejection
+                </button>
+                <button type="button" @click="confirmingReject = false"
+                        class="flex-1 bg-slate-800 hover:bg-slate-700 rounded-lg py-2 font-medium">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

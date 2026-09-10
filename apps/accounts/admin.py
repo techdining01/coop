@@ -1,10 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import KYCVerification, MemberProfile, User
-
-
-
+from.models import KYCVerification, MemberProfile, User
 
 
 @admin.register(User)
@@ -16,10 +13,12 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(MemberProfile)
 class MemberProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "status", "id_type", "latest_kyc_status", "payvessel_account_number", "payvessel_error_count", "joined_at")
+    list_display = ("user", "status", "id_type", "latest_kyc_status", "payvessel_account_number", "joined_at")
     list_filter = ("status", "id_type")
     search_fields = ("user__username", "user__first_name", "user__last_name")
-    readonly_fields = ("joined_at", "payvessel_account_number", "payvessel_bank_name", "payvessel_error", "payvessel_error_count")
+    # id_number is never shown in a list view — only on the detail page,
+    # and even there it's decrypted on the fly by EncryptedCharField.
+    readonly_fields = ("joined_at", "payvessel_account_number", "payvessel_bank_name")
     actions = ["approve_members"]
 
     def latest_kyc_status(self, obj):
@@ -30,10 +29,10 @@ class MemberProfileAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         """
-        Phase 6: hide the approve action entirely from admins without the
+        I hide the approve action entirely from admins without the
         can_approve_members permission (Secretary/Chairman by default —
-        see setup_roles.py), rather than showing it and failing silently
-        or erroring after the fact.
+        see setup_roles.py), rather than showing it and letting it fail
+        silently or error after the fact.
         """
         actions = super().get_actions(request)
         if not request.user.has_perm("accounts.can_approve_members"):
@@ -42,11 +41,10 @@ class MemberProfileAdmin(admin.ModelAdmin):
 
     def approve_members(self, request, queryset):
         """
-        Sets status=ACTIVE and create reserved-account("On admin approval: PayVessel reserved (STATIC) virtual account
+        Sets status=ACTIVE and fires reserved-account creation virtual account
         created"). Deliberately does NOT check KYC match status here —
         an admin may have legitimate reasons to approve despite a flagged
-        mismatch., "flagged... for manual follow-up", not an
-        automatic block), so this is a judgment call left to the admin,
+        mismatch, so this is a judgment call left to the admin,
         not enforced in code.
         """
         from apps.payments.tasks import create_reserved_account_task

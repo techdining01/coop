@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Log out — AL-HALAL ISLAMIC{% endblock %}
+{% block title %}Log out — {{ COOPERATIVE_SHORT_NAME }}{% endblock %}
 {% block content %}
 <div class="max-w-sm mx-auto mt-16 text-center">
-    <h1 class="text-xl font-semibold mb-2">Log out of AL-HALAL ISLAMIC?</h1>
+    <h1 class="text-xl font-semibold mb-2">Log out of {{ COOPERATIVE_SHORT_NAME }}?</h1>
     <p class="text-sm text-slate-500 mb-6">You'll need to log back in to access your dashboard.</p>
     <form method="post" class="space-y-3">
         {% csrf_token %}
