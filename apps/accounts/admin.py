@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from.models import KYCVerification, MemberProfile, User
+from .models import KYCVerification, MemberProfile, User
 
 
 @admin.register(User)
