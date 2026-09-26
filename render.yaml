@@ -20,8 +20,6 @@ services:
     name: coop-web
     runtime: docker
     dockerfilePath: ./Dockerfile
-    # Pre-deploy: runs migrate before each new version goes live.
-    # setup_roles is idempotent — safe to run on every deploy.
     preDeployCommand: >-
       python manage.py migrate --noinput &&
       python manage.py setup_roles
@@ -32,7 +30,7 @@ services:
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        value: ".onrender.com"   # update to your custom domain if you add one
+        value: ".onrender.com"
       - key: COOPERATIVE_SHORT_NAME
         value: AL-HALAL
       - key: DATABASE_URL
@@ -128,6 +126,7 @@ services:
     name: coop-redis
     plan: free
     maxmemoryPolicy: noeviction
+    ipAllowList: []   # empty = only Render-internal services can connect (recommended)
 
 databases:
   # ── Postgres ─────────────────────────────────────────────────────────────
