@@ -9,3 +9,4 @@ __pycache__/
 .kilo/
 .venv/
 node_modules/
+.git/
