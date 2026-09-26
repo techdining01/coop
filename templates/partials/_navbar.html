@@ -41,6 +41,9 @@
                         {% if perms.accounts.can_approve_members %}
                         <a href="{% url 'accounts:approve_members' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">Approve Members</a>
                         {% endif %}
+                        {% if user.is_admin_tier %}
+                        <a href="{% url 'accounts:user_management' %}" class="block px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-emerald-400">User Management</a>
+                        {% endif %}
                     </div>
                 </div>
             {% else %}

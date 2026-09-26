@@ -23,6 +23,12 @@ handler404 = "apps.core.views.page_not_found_view"
 handler500 = "apps.core.views.server_error_view"
 
 if settings.DEBUG:
-    # In production, nginx serves /media/ directly (see nginx.conf) —
-    # this is dev-only so uploaded receipts render locally without nginx.
+    try:
+        import debug_toolbar
+        urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]
+    except ImportError:
+        pass
+
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

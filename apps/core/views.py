@@ -159,6 +159,7 @@ def _dashboard_analytics():
 
     return {
         "total_members": MemberProfile.objects.filter(status=MemberProfile.Status.ACTIVE).count(),
+        "pending_members": MemberProfile.objects.filter(status=MemberProfile.Status.PENDING).count(),
         "total_inflow": total_inflow,
         "total_outflow": total_outflow,
         "chart_labels": weekly_labels,

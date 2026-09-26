@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 @shared_task
 def verify_identity_task(member_profile_id):
     """
-    Fired once at registration (Section 5a). Calls PayVessel's BVN/NIN
+    Fired once at registration. Calls PayVessel's BVN/NIN
     Verification API and records the match result — never blocks
     registration, never auto-activates membership on a MATCH (an admin
     still approves; see MemberProfileAdmin.approve_members).

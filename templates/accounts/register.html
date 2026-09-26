@@ -1,14 +1,18 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Register — {{ COOPERATIVE_SHORT_NAME }}{% endblock %}
+{% block extra_head %}
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+{% endblock %}
 {% block content %}
 <div class="max-w-md mx-auto mt-8">
     <h1 class="text-xl font-semibold mb-1">Join the Cooperative</h1>
     <p class="text-sm text-slate-500 mb-6">
-        Your BVN/NIN is stored encrypted and used only to verify your identity.
-        it's used for account creation and verification. You will need to verify your identity
-        before your membership is activated.
+        Your BVN/NIN is stored encrypted and only used to verify your identity.
+        An admin will review and activate your membership after you register.
     </p>
-    <form method="post" class="space-y-4">
+
+    <form method="post" class="space-y-4" id="register-form">
         {% csrf_token %}
         {% for field in form %}
         <div>
@@ -22,12 +26,107 @@
             {% endif %}
         </div>
         {% endfor %}
+
+        <div id="id-verification-section" class="hidden pt-2">
+            <div class="border-t border-slate-700 pt-4">
+                <button type="button" id="verify-id-btn"
+                        class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg py-2 text-sm font-medium">
+                    Check ID with PayVessel (optional)
+                </button>
+                <p class="text-xs text-slate-600 mt-1 text-center">Verification is optional — you can register without it.</p>
+            </div>
+            <div id="id-result" class="hidden mt-3 p-3 rounded-lg text-sm">
+                <p id="id-result-message"></p>
+            </div>
+        </div>
+
         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 rounded-lg py-2 font-medium">
-            Register
+            Complete Registration
         </button>
     </form>
     <p class="text-sm text-slate-500 mt-4">
         Already a member? <a href="{% url 'accounts:login' %}" class="text-emerald-400">Log in</a>
     </p>
 </div>
+
+<script>
+(function() {
+    var idTypeField = document.getElementById("id_id_type");
+    var idNumberField = document.getElementById("id_id_number");
+    var verifySection = document.getElementById("id-verification-section");
+    var verifyBtn = document.getElementById("verify-id-btn");
+    var resultDiv = document.getElementById("id-result");
+    var resultMessage = document.getElementById("id-result-message");
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    function getField(name) {
+        var el = document.querySelector('[name=' + name + ']');
+        return el ? el.value.trim() : '';
+    }
+
+    function toggleVerifySection() {
+        var hasIdType = idTypeField && idTypeField.value;
+        var hasIdNumber = idNumberField && idNumberField.value && idNumberField.value.length >= 11;
+        verifySection.classList.toggle("hidden", !(hasIdType && hasIdNumber));
+    }
+
+    [idTypeField, idNumberField].forEach(function(f) {
+        if (f) f.addEventListener("change", toggleVerifySection);
+        if (f) f.addEventListener("input", toggleVerifySection);
+    });
+
+    verifyBtn.addEventListener("click", function() {
+        var idType = idTypeField.value;
+        var idNumber = idNumberField.value;
+        if (!idType || !idNumber) return;
+
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = "Checking…";
+        resultDiv.classList.remove("hidden");
+        resultDiv.className = "mt-3 p-3 rounded-lg text-sm bg-slate-800 text-slate-300";
+        resultMessage.textContent = "Contacting verification service…";
+
+        var body = [
+            "id_type=" + encodeURIComponent(idType),
+            "id_number=" + encodeURIComponent(idNumber),
+            "first_name=" + encodeURIComponent(getField('first_name')),
+            "last_name=" + encodeURIComponent(getField('last_name')),
+            "gender=" + encodeURIComponent(getField('gender')),
+            "birthday=" + encodeURIComponent(getField('date_of_birth')),
+            "phone_number=" + encodeURIComponent(getField('phone_number')),
+        ].join('&');
+
+        fetch("{% url 'accounts:identity_lookup' %}", {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/x-www-form-urlencoded" },
+            body: body,
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+            if (resp.ok) {
+                var data = (resp.data && resp.data.data) || {};
+                var nameMatch = data.name_match_rlt;
+                var bdayMatch = data.birthday_match_rlt;
+                var msg = "✅ ID check complete.";
+                if (nameMatch && bdayMatch) {
+                    msg += " Name: " + nameMatch + ", Date of birth: " + bdayMatch + ".";
+                }
+                resultDiv.className = "mt-3 p-3 rounded-lg text-sm bg-emerald-900/40 border border-emerald-700 text-emerald-300";
+                resultMessage.textContent = msg;
+            } else {
+                resultDiv.className = "mt-3 p-3 rounded-lg text-sm bg-amber-900/40 border border-amber-700 text-amber-300";
+                resultMessage.textContent = "⚠️ " + (resp.error || "Verification could not be completed. You can still register — an admin will review your ID.");
+            }
+        })
+        .catch(function() {
+            resultDiv.className = "mt-3 p-3 rounded-lg text-sm bg-amber-900/40 border border-amber-700 text-amber-300";
+            resultMessage.textContent = "⚠️ Could not reach the verification service. You can still complete your registration.";
+        })
+        .finally(function() {
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = "Check ID with PayVessel (optional)";
+        });
+    });
+})();
+</script>
 {% endblock %}

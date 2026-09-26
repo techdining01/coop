@@ -74,6 +74,8 @@ class MemberProfile(models.Model):
     # Filled in once a PayVessel reserved virtual account is created
     payvessel_account_number = models.CharField(max_length=40, blank=True)
     payvessel_bank_name = models.CharField(max_length=100, blank=True)
+    payvessel_error = models.TextField(blank=True)
+    payvessel_error_count = models.PositiveIntegerField(default=0)
 
     joined_at = models.DateTimeField(auto_now_add=True)
     rejection_reason = models.TextField(blank=True)

@@ -15,12 +15,9 @@ Endpoint confidence, as of this build:
     names_match_percentage — NOT a raw name/DOB return to compare
     yourself. tasks.py relies on this exact shape.
 
-  - BVN Basic Verification — NOT independently confirmed in the docs
-    fetched for this build. Inferred by symmetry with the NIN endpoint as:
-        POST /kyc/api/v1/merchant/bvn/basic
-    CONFIRM this against docs.payvessel.com/api-reference/verification/
-    before relying on it in production. If the real path differs, only
-    BVN_VERIFY_PATH below needs to change — nothing else in this client.
+   - BVN Basic Verification — CONFIRMED against
+     docs.payvessel.com/api-reference/verification/basic-bvn-verification:
+         POST /kyc/api/v1/merchant/bvn/basic
 
 Base URLs:
   production: https://api.payvessel.com

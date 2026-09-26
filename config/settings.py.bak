@@ -4,7 +4,7 @@ from decouple import Csv, config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("DJANGO_SECRET_KEY")
-DEBUG = True #config("DJANGO_DEBUG", default=True, cast=bool)
+DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config(
     "DJANGO_ALLOWED_HOSTS", default="localhost,127.0.0.1,10.14.247.216", cast=Csv()
 )
@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "whitenoise",
+    "debug_toolbar",
     # third-party
     "rest_framework",
     "django_htmx",
@@ -70,7 +71,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 DATABASES = {
     "default": {
@@ -138,11 +138,23 @@ CELERY_TIMEZONE = TIME_ZONE
 # Behind nginx (Docker): traffic arrives over HTTP, so SSL-secure cookies
 # and SSL redirect must stay False here. When nginx is fronted by HTTPS
 # (e.g. behind a VPS with certbot on port 443), set these to True.
+
+
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=not DEBUG, cast=bool)
 SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=not DEBUG, cast=bool)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if not DEBUG else None
 USE_X_FORWARDED_HOST = True
+
+
+# # Force-disable HTTPS redirects and secure cookies in development
+# SECURE_SSL_REDIRECT = False
+# SESSION_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = False
+
+# Ensure debug mode is active
+DEBUG = True
+
 
 # --- App-specific: minimum length reused by MemberProfile validation ---
 BVN_LENGTH = 11

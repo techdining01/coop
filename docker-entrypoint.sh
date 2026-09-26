@@ -12,5 +12,6 @@ done
 
 >&2 echo "Postgres is up - executing command"
 python manage.py migrate --noinput
+python manage.py collectstatic --noinput
 python manage.py create_superuser
 exec $cmd

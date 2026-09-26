@@ -14,13 +14,13 @@ class MemberRegistrationForm(UserCreationForm):
     gender = forms.ChoiceField(choices=MemberProfile.Gender.choices, widget=forms.Select(attrs={"class": "form-select"}))
     id_type = forms.ChoiceField(
         choices=MemberProfile.IdType.choices,
-        widget=forms.Select(attrs={"class": "form-select"}),
+        widget=forms.Select(attrs={"class": "form-select", "id": "id_id_type"}),
         help_text="Verified against PayVessel's BVN/NIN API before your membership is activated.",
     )
     id_number = forms.CharField(
         max_length=settings.BVN_LENGTH,
         min_length=settings.BVN_LENGTH,
-        widget=forms.TextInput(attrs={"class": "form-input", "inputmode": "numeric"}),
+        widget=forms.TextInput(attrs={"class": "form-input", "inputmode": "numeric", "id": "id_id_number"}),
     )
 
     class Meta:
@@ -29,6 +29,8 @@ class MemberRegistrationForm(UserCreationForm):
         widgets = {
             "username": forms.TextInput(attrs={"class": "form-input"}),
         }
+
+    field_order = ["username", "password1", "password2", "id_type", "id_number", "first_name", "last_name", "email", "phone_number", "date_of_birth", "gender"]
 
     def save(self, commit=True):
         user = super().save(commit=False)

@@ -9,6 +9,8 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("register/", views.register_view, name="register"),
     path("pending-approval/", views.pending_approval_view, name="pending_approval"),
+    path("identity-lookup/", views.identity_lookup, name="identity_lookup"),
     path("approvals/", views.member_approval_queue_view, name="approve_members"),
     path("approvals/<int:pk>/", views.member_approval_detail_view, name="member_approval_detail"),
+    path("users/", views.user_management_view, name="user_management"),
 ]

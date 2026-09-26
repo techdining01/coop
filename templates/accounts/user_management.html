@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}User Management — {{ COOPERATIVE_SHORT_NAME }}{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-xl font-semibold">User Management</h1>
+    <span class="text-slate-500 text-sm">{{ page_obj.paginator.count }} user{{ page_obj.paginator.count|pluralize }}</span>
+</div>
+
+<form method="get" class="flex flex-wrap gap-3 mb-6">
+    <input name="q" value="{{ search }}" placeholder="Search name / email / username"
+           class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 w-64 focus:outline-none focus:border-emerald-600">
+    <select name="role" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-600">
+        <option value="">All roles</option>
+        {% for val, label in role_choices %}
+        <option value="{{ val }}" {% if role_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <select name="status" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-600">
+        <option value="">All statuses</option>
+        {% for val, label in status_choices %}
+        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 rounded-lg px-4 py-2 text-sm font-medium">Filter</button>
+    {% if search or role_filter or status_filter %}
+    <a href="{% url 'accounts:user_management' %}" class="text-slate-400 hover:text-slate-200 text-sm self-center">Clear</a>
+    {% endif %}
+</form>
+
+<div class="overflow-x-auto rounded-xl border border-slate-800">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-900 text-slate-400 text-left">
+            <tr>
+                <th class="px-4 py-3 font-medium">Name</th>
+                <th class="px-4 py-3 font-medium">Email</th>
+                <th class="px-4 py-3 font-medium">Role</th>
+                <th class="px-4 py-3 font-medium">Status</th>
+                <th class="px-4 py-3 font-medium">Joined</th>
+                <th class="px-4 py-3 font-medium">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800">
+            {% for u in page_obj %}
+            {% with profile=u.member_profile %}
+            <tr class="bg-slate-950 hover:bg-slate-900">
+                <td class="px-4 py-3 font-medium">{{ u.get_full_name|default:u.username }}</td>
+                <td class="px-4 py-3 text-slate-400">{{ u.email|default:"—" }}</td>
+                <td class="px-4 py-3">
+                    {% if request.user.is_superuser %}
+                    <form method="post" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ u.pk }}">
+                        <input type="hidden" name="action" value="change_role">
+                        <select name="role" onchange="this.form.submit()"
+                                class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none">
+                            {% for val, label in role_choices %}
+                            <option value="{{ val }}" {% if u.role == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    {% else %}
+                    <span class="text-slate-300">{{ u.get_role_display }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                    {% if profile %}
+                        <span class="text-xs px-2 py-1 rounded-full
+                            {% if profile.status == 'active' %}bg-emerald-900 text-emerald-300
+                            {% elif profile.status == 'pending' %}bg-yellow-900 text-yellow-300
+                            {% elif profile.status == 'suspended' %}bg-rose-900 text-rose-300
+                            {% elif profile.status == 'exited' %}bg-slate-700 text-slate-400
+                            {% else %}bg-slate-800 text-slate-500{% endif %}">
+                            {{ profile.get_status_display }}
+                        </span>
+                    {% else %}
+                        <span class="text-slate-600 text-xs">Admin / No profile</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-slate-500">{{ u.date_joined|date:"d M Y" }}</td>
+                <td class="px-4 py-3">
+                    {% if profile %}
+                    <div class="flex gap-2">
+                        {% if profile.status == 'active' %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ u.pk }}">
+                            <input type="hidden" name="action" value="suspend">
+                            <button type="submit" class="text-xs text-rose-400 hover:text-rose-300">Suspend</button>
+                        </form>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ u.pk }}">
+                            <input type="hidden" name="action" value="exit">
+                            <button type="submit" class="text-xs text-slate-500 hover:text-slate-300">Exit</button>
+                        </form>
+                        {% elif profile.status == 'suspended' %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ u.pk }}">
+                            <input type="hidden" name="action" value="activate">
+                            <button type="submit" class="text-xs text-emerald-400 hover:text-emerald-300">Reactivate</button>
+                        </form>
+                        {% elif profile.status == 'pending' %}
+                        <a href="{% url 'accounts:member_approval_detail' profile.pk %}" class="text-xs text-yellow-400 hover:text-yellow-300">Review</a>
+                        {% else %}
+                        <span class="text-slate-700 text-xs">—</span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <span class="text-slate-700 text-xs">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr><td colspan="6" class="px-4 py-6 text-slate-600 text-center">No users found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex gap-2 mt-4 text-sm">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&q={{ search }}&role={{ role_filter }}&status={{ status_filter }}"
+       class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">← Prev</a>
+    {% endif %}
+    <span class="px-3 py-1 text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&q={{ search }}&role={{ role_filter }}&status={{ status_filter }}"
+       class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

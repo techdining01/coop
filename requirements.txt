@@ -13,3 +13,6 @@ django-htmx==1.18.0
 requests==2.32.3
 python-dateutil==2.9.0.post0
 reportlab==4.2.2
+python-json-logger==2.0.7
+dj-database-url==2.2.0
+django-debug-toolbar
