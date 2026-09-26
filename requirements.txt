@@ -11,6 +11,8 @@ whitenoise==6.6.0
 python-decouple==3.8
 django-htmx==1.18.0
 requests==2.32.3
+urllib3==2.2.3
+charset-normalizer==3.3.2
 python-dateutil==2.9.0.post0
 reportlab==4.2.2
 python-json-logger==2.0.7

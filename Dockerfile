@@ -22,7 +22,7 @@ RUN mkdir -p /app/mediafiles /app/staticfiles /app/backups /app/exports
 # The script overrides DATABASES to sqlite so Django can start without
 # a real Postgres connection — collectstatic never touches the DB.
 # Set these as build arguments in Render:
-#   Dashboard → service → Settings → Environment → Build environment variables
+#   service → Settings → Build → Build environment variables
 ARG DJANGO_SECRET_KEY
 ARG FIELD_ENCRYPTION_KEY
 ARG PAYVESSEL_API_KEY=""
@@ -36,9 +36,9 @@ RUN DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY} \
     DATABASE_URL="" \
     python collectstatic_build.py
 
-# Render always routes traffic to port 10000 internally.
+RUN chmod +x /app/build.sh
+
 EXPOSE 10000
 
-# Render runs migrations via the Pre-Deploy Command in the dashboard:
-#   python manage.py migrate --noinput && python manage.py setup_roles
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:10000", "--workers", "2", "--timeout", "120"]
+# build.sh: runs migrate → setup_roles → gunicorn
+CMD ["/app/build.sh"]
