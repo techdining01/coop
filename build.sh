@@ -4,6 +4,9 @@ set -e
 echo "==> Running migrations..."
 python manage.py migrate --noinput
 
+echo "==> Admin User Creation..."
+python manage.py create_superuser 
+
 echo "==> Setting up roles..."
 python manage.py setup_roles
 
