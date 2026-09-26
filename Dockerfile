@@ -38,5 +38,6 @@ RUN DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY} \
 
 EXPOSE 8000
 
-# railway.toml overrides this with migrate + setup_roles before gunicorn.
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120"]
+# $PORT is injected by Railway at runtime — must use shell form (not exec
+# form) so the variable is expanded before gunicorn starts.
+CMD sh -c "gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"
