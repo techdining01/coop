@@ -1,0 +1,38 @@
+# railway.toml
+# Docs: https://docs.railway.com/reference/config-as-code
+#
+# Railway deploy steps:
+#   1. Push repo to GitHub.
+#   2. Railway dashboard → New Project → Deploy from GitHub repo.
+#   3. Add Postgres plugin: project → New → Database → PostgreSQL
+#      Railway auto-injects DATABASE_URL into all services.
+#   4. Add Redis plugin: project → New → Database → Redis
+#      Railway auto-injects REDIS_URL into all services.
+#   5. Set these environment variables on the web service
+#      (Variables tab — these are never stored in this file):
+#        DJANGO_SECRET_KEY
+#        FIELD_ENCRYPTION_KEY
+#        PAYVESSEL_BASE_URL   (https://api.payvessel.com for production)
+#        PAYVESSEL_API_KEY
+#        PAYVESSEL_API_SECRET
+#        PAYVESSEL_BUSINESS_ID
+#        DJANGO_ALLOWED_HOSTS  (your-app.up.railway.app or custom domain)
+#        COOPERATIVE_SHORT_NAME
+#   6. For worker and beat: duplicate the service in Railway dashboard,
+#      override the start command per the [deploy.startCommand] below,
+#      and share the same variables (use Railway's shared variables feature).
+#
+# Build variables (needed for collectstatic during docker build):
+#   Set DJANGO_SECRET_KEY and FIELD_ENCRYPTION_KEY as build-time variables
+#   in Railway: service → Settings → Build → Build Arguments.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "python manage.py migrate --noinput && python manage.py setup_roles && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

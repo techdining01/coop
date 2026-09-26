@@ -1,22 +1,21 @@
 """
-Production settings — used on Render.com and any other PaaS/VPS deploy.
+Production settings — Railway, Render, or any PaaS/VPS deploy.
 
-Key differences from dev:
+Key points:
 - DEBUG = False
-- SECURE_SSL_REDIRECT = False  — Render terminates TLS at the edge; the app
-  receives plain HTTP internally. Redirecting to HTTPS here causes an infinite
-  redirect loop. Render's edge already enforces HTTPS for external traffic.
-- SECURE_PROXY_SSL_HEADER set so Django knows the original request was HTTPS.
-- HSTS, secure cookies, content-type sniffing protection all on.
+- SECURE_SSL_REDIRECT = False — Railway/Render terminate TLS at their edge
+  proxy; the app receives plain HTTP internally. Redirecting to HTTPS here
+  causes an infinite redirect loop. The platform already enforces HTTPS
+  for all external traffic.
+- SECURE_PROXY_SSL_HEADER tells Django the original request was HTTPS
+  (needed for request.is_secure(), CSRF, secure cookies to work correctly).
+- HSTS, secure cookies, X_FRAME_OPTIONS all on.
 """
 
 from .base import *  # noqa: F401, F403
-from decouple import config
 
 DEBUG = False
 
-# Render terminates TLS at its edge proxy — never redirect to HTTPS from
-# inside the app or you get an infinite loop.
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
