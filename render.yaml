@@ -1,18 +1,28 @@
-# render.yaml — Render Blueprint
+# render.yaml — one-click deploy for Render
 # Docs: https://render.com/docs/blueprint-spec
 #
-# Deploy steps:
-#   1. Push this repo to GitHub/GitLab.
-#   2. In Render dashboard → New → Blueprint → connect your repo.
-#   3. Render reads this file and creates all services automatically.
-#   4. Set the secret environment variables marked `sync: false` in the
-#      Render dashboard (they are NOT stored in this file):
-#        - DJANGO_SECRET_KEY
-#        - FIELD_ENCRYPTION_KEY
-#        - PAYVESSEL_API_KEY
-#        - PAYVESSEL_API_SECRET
-#        - PAYVESSEL_BUSINESS_ID
-#        - PAYVESSEL_BASE_URL  (use https://api.payvessel.com for production)
+# ── How to deploy ───────────────────────────────────────────────────────────
+#   1. Generate your secrets locally first:
+#        python -c "import secrets; print(secrets.token_hex(50))"
+#        python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+#
+#   2. Push this repo to GitHub.
+#
+#   3. Render dashboard → New → Blueprint → connect your repo.
+#      Render reads this file and creates all services in one go.
+#
+#   4. Render will prompt you to fill in the variables marked `sync: false`
+#      before the first deploy starts — paste your generated values there:
+#        DJANGO_SECRET_KEY
+#        FIELD_ENCRYPTION_KEY
+#        PAYVESSEL_BASE_URL    (https://sandbox.payvessel.com for now)
+#        PAYVESSEL_API_KEY
+#        PAYVESSEL_API_SECRET
+#        PAYVESSEL_BUSINESS_ID
+#
+#   5. After first deploy, create your superuser:
+#      coop-web → Shell tab → python manage.py createsuperuser
+# ────────────────────────────────────────────────────────────────────────────
 
 services:
   # ── Web (Django + Gunicorn) ──────────────────────────────────────────────
@@ -20,9 +30,9 @@ services:
     name: coop-web
     runtime: docker
     dockerfilePath: ./Dockerfile
-    preDeployCommand: >-
-      python manage.py migrate --noinput &&
-      python manage.py setup_roles
+    # Render always routes to port 10000 for Docker services
+    dockerContext: .
+    preDeployCommand: "python manage.py migrate --noinput && python manage.py setup_roles"
     healthCheckPath: /
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -42,6 +52,7 @@ services:
           name: coop-redis
           type: redis
           property: connectionString
+      # Secrets — Render will prompt for these values on first deploy
       - key: DJANGO_SECRET_KEY
         sync: false
       - key: FIELD_ENCRYPTION_KEY
@@ -60,6 +71,7 @@ services:
     name: coop-worker
     runtime: docker
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     dockerCommand: celery -A config worker -l info --concurrency 2
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -93,6 +105,7 @@ services:
     name: coop-beat
     runtime: docker
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     dockerCommand: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -126,7 +139,7 @@ services:
     name: coop-redis
     plan: free
     maxmemoryPolicy: noeviction
-    ipAllowList: []   # empty = only Render-internal services can connect (recommended)
+    ipAllowList: []  # internal only — only Render services in this account can connect
 
 databases:
   # ── Postgres ─────────────────────────────────────────────────────────────
